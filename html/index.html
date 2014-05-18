@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>twitch streamer</title>
+</head>
+<link rel="stylesheet" href="../css/app.css" type="text/css" media="screen" title="stylesheet" charset="utf-8">
+<body>
+   <div id="main">
+
+      <div id="error" class="ninja">
+      </div>
+
+      <div id="loading">
+         <p>Loading ...</p>
+      </div>
+
+      <div id="first_run" class="ninja">
+         <form id="first_run_form">
+
+            <div class="resolution">
+               <p>
+                  Your screen resolution has been detected as <code class="screen_res"></code>.
+               </p>
+            </div>
+
+            <div class="key">
+               <p>
+                  It looks like I don't know what your twitch key is. You can find it at <a href="#" id="stream_key_link">http://www.twitch.tv/broadcast/dashboard/streamkey</a>
+               </p>
+               <label for="first_run_twitch_key">Twitch key:</label>
+               <input type="text" name="twitch_key" id="first_run_twitch_key" value="">
+            </div> <!-- .key -->
+
+            <input type="submit" name="submit" id="first_run_submit" value="OK!">
+
+         </form> <!-- #settings_form -->
+      </div> <!-- #first_run -->
+
+      <div id="streamer" class="ninja">
+
+         <button name="stream" id="stream">Stream!</button>
+         <br>
+         go to the <a href="#settings" class="settings_link">settings</a>
+
+      </div> <!-- #streamer -->
+
+      <div id="settings" class="ninja">
+         <form id="settings_form">
+
+            <div class="key">
+               <label for="settings_twitch_key">Key:</label>
+               <input type="text" name="twitch_key" id="settings_twitch_key" value="">
+            </div> <!-- .key -->
+
+            <div class="input">
+               <label for="settings_input_res">Input resolution:</label>
+               <input type="text" name="input_res" id="settings_input_res" value="">
+            </div> <!-- .input -->
+
+            <div class="output">
+               <label for="settings_output_res">Output resolution:</label>
+               <input type="text" name="output_res" id="settings_output_res" value="">
+            </div> <!-- .output -->
+
+            <div class="fps">
+               <label for="settings_fps">FPS:</label>
+               <input type="text" name="fps" id="settings_fps" value="">
+            </div> <!-- .fps -->
+
+            <div class="quality">
+               <label for="settings_quality">Quality:</label>
+               <!-- <input type="text" name="quality" id="settings_quality" value=""> -->
+               <select id="settings_quality" name="quality">
+                  <option value="ultrafast">ultra fast</option>
+                  <option value="superfast">super fast</option>
+                  <option value="veryfast">very fast</option>
+                  <option value="faster">faster</option>
+                  <option value="fast">fast</option>
+                  <option value="placebo">placebo</option>
+                  <option value="medium">medium</option>
+                  <option value="slow">slow</option>
+                  <option value="slower">slower</option>
+                  <option value="veryslow">very slow</option>
+               </select>
+            </div> <!-- .quality -->
+
+            <input type="submit" name="submit" id="settings_submit" value="Save">
+
+         </form>
+      </div> <!-- #settings -->
+
+   </div> <!-- #main -->
+   <script type="text/javascript" charset="utf-8" src="../js/jquery.min.js"></script>
+   <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+</body>
+</html>

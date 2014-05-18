@@ -1,0 +1,12 @@
+{
+   "name": "twitch-streamer",
+   "main": "./html/index.html",
+   "dependencies": {
+      "fs-extra": ">= 0.8.x",
+      "shelljs": ">= 0.3.x"
+   },
+   "window": {
+      "min_width": 600,
+      "min_height": 100
+   }
+}

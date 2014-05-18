@@ -1,0 +1,76 @@
+// variables
+@sidebarMinWidth: 200px;
+@sidebarWidth: 33%;
+@textColor: #909090;
+@linkColor: #379da1;
+@codeColor: #6ef5ea;
+@fontFamily: "mono";
+@fontSize: 15px;
+@hoverColor: #151515;
+
+// mixins
+
+.ninja() {display: none;}
+
+// global styles
+
+html {
+   height: 100%;
+}
+
+body {
+   background: #151515;
+   margin: 0;
+   height: 100%;
+   color: @textColor;
+   font-family: @fontFamily;
+   font-size: @fontSize;
+}
+
+code {
+   color: @codeColor;
+}
+
+ul, p {
+   margin: 0;
+   padding: 0;
+   list-style-type: none;
+}
+
+a {
+   text-decoration: none;
+   color: @linkColor;
+}
+
+input[type=text] {
+   background: white;
+   border: none;
+   border-radius: 4px;
+   min-width: 200px;
+   text-indent: 3px;
+}
+
+.ninja {.ninja();}
+
+// particular styles
+
+#main {
+   // padding: 10px;
+   text-align: center;
+   height: 100%;
+   &>div {
+      padding: 10px;
+   }
+}
+
+#loading, #error {
+   text-align: center;
+   position: relative;
+   top: 50%;
+   transform: translateY(-50%);
+}
+
+#error {
+   background: #d32f2f;
+   color: lighten(@textColor, 40%);
+}
