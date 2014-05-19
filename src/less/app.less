@@ -12,6 +12,17 @@
 
 .ninja() {display: none;}
 
+.clearfix { // from http://freestyle-developments.co.uk/blog/?p=318
+    zoom: 1;
+    &:before, &:after {
+        content: "";
+        display: table;
+    }
+    &:after {
+        clear: both;
+    }
+}
+
 // global styles
 
 html {
@@ -75,8 +86,14 @@ input[type=text] {
    color: lighten(@textColor, 40%);
 }
 
-#window_buttons {
-   position: absolute;
-   bottom: 0;
-   right: 0;
+#titlebar {
+   width: 100%;
+   background: #151515;
+   -webkit-app-region: drag;
+   -webkit-user-select: none;
+   .clearfix;
+   #window_buttons {
+      -webkit-app-region: no-drag;
+      float: right;
+   }
 }

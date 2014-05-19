@@ -141,6 +141,7 @@ initWindowControls = ->
                switchStream(off)
          )
       win.close()
+   # maximizes window
    maximizeWindow = ->
       if $MAXIMIZED
          win.unmaximize()
@@ -148,9 +149,7 @@ initWindowControls = ->
       else
          win.maximize()
          $MAXIMIZED = true
-   $("#close").on( "click", ->
-         closeWindow()
-      )
+   $("#close").on( "click", -> closeWindow() )
    $("#maximize").on( "click", -> maximizeWindow() )
 
 init = ->
