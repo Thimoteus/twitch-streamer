@@ -89,15 +89,6 @@ print = (x) -> process.stdout.write x # DO NOT USE FOR DEBUGGING
 puts = (err, stdout, stderr) -> sys.puts(stdout)
 cmd = (command) -> exec(command, puts)
 
-writeFileToPath = (path, file) ->
-   # function to write the config file
-   # Arguments: 2---path, file
-   fse.outputJson(path, file, (err) ->
-         console.log err
-      )
-
-writeConfigFile = (file) -> writeFileToPath($CONFIG_PATH, file)
-
 formDataToJson = (form, fn, json={}, callback) ->
    # function that turns a form's input into a json object
    # fn is a function that can act on the json object
@@ -125,6 +116,10 @@ switchSections = (sec1, sec2) ->
    $(sec1).addClass("ninja")
    $(sec2).removeClass("ninja")
 
+writeJsonToLocalStorage = (json) ->
+   for key of json
+      localStorage[key] = json[key]
+
 #######################
 # 4. MEAT AND POTATOES!
 #######################
@@ -138,18 +133,13 @@ init = ->
       return
    # checks to see if config file exists and is readable.
    # if it is, go straight to the streaming
-   fse.readJson($CONFIG_PATH, (err, cfg) ->
-         if err?
-            text = "An error was encountered while reading the config file: "
-            console.log text + err
-         # check if config file exists and satisfies us
-         if cfg?
-            if cfg["twitch_key"]? and cfg["input_res"]?
-               $("#loading").addClass("ninja")
-               bypassFirstRunPage(cfg)
-         else
-            firstRunPage()
-      )
+   if localStorage["twitch_key"]? and localStorage["input_res"]?
+      $("#loading").addClass("ninja")
+      bypassFirstRunPage(localStorage)
+      print "bypassing first run page\n"
+   else
+      firstRunPage()
+      print "going to first run page\n"
 
 errorPage = (section, text) ->
    switchSections(section, "#error")
@@ -164,12 +154,12 @@ bypassFirstRunPage = (cfg = $CONFIG_FILE) ->
 firstRunFormHandler = (fn) ->
    # fn is a callback
    if fn?
-      formDataToJson("#first_run_form", writeConfigFile, $CONFIG_FILE, fn)
+      formDataToJson("#first_run_form", writeJsonToLocalStorage, $CONFIG_FILE, fn)
    else
-      formDataToJson("#first_run_form", writeConfigFile, $CONFIG_FILE)
+      formDataToJson("#first_run_form", writeJsonToLocalStorage, $CONFIG_FILE)
 
 settingsFormHandler = (cfg) ->
-   formDataToJson("#settings_form", writeConfigFile, cfg)
+   formDataToJson("#settings_form", writeJsonToLocalStorage, cfg)
    $("#settings_form").on("submit", (evt) ->
          switchSections("#settings", "#streamer")
       )
@@ -237,7 +227,7 @@ streamerPage = (cfg) ->
             text = "avconv "
             for args in stream_command_args
                text += args + " "
-            print text
+            print text+"\n"
       )
 
 #######################

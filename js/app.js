@@ -1,5 +1,5 @@
 (function() {
-  var $APP_NAME, $CONFIG_DIR, $CONFIG_FILE, $CONFIG_FILE_NAME, $CONFIG_PATH, $HOME, $STREAM_CMD, bypassFirstRunPage, cmd, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, openLinkInDefaultBrowser, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, sys, writeConfigFile, writeFileToPath;
+  var $APP_NAME, $CONFIG_DIR, $CONFIG_FILE, $CONFIG_FILE_NAME, $CONFIG_PATH, $HOME, $STREAM_CMD, bypassFirstRunPage, cmd, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, openLinkInDefaultBrowser, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, sys, writeJsonToLocalStorage;
 
   gui = require('nw.gui');
 
@@ -49,16 +49,6 @@
     return exec(command, puts);
   };
 
-  writeFileToPath = function(path, file) {
-    return fse.outputJson(path, file, function(err) {
-      return console.log(err);
-    });
-  };
-
-  writeConfigFile = function(file) {
-    return writeFileToPath($CONFIG_PATH, file);
-  };
-
   formDataToJson = function(form, fn, json, callback) {
     if (json == null) {
       json = {};
@@ -91,6 +81,15 @@
     return $(sec2).removeClass("ninja");
   };
 
+  writeJsonToLocalStorage = function(json) {
+    var key, _results;
+    _results = [];
+    for (key in json) {
+      _results.push(localStorage[key] = json[key]);
+    }
+    return _results;
+  };
+
   init = function() {
     var avconvNotInstalled;
     if (!sh.which("avconv")) {
@@ -98,21 +97,14 @@
       errorPage("#loading", avconvNotInstalled);
       return;
     }
-    return fse.readJson($CONFIG_PATH, function(err, cfg) {
-      var text;
-      if (err != null) {
-        text = "An error was encountered while reading the config file: ";
-        console.log(text + err);
-      }
-      if (cfg != null) {
-        if ((cfg["twitch_key"] != null) && (cfg["input_res"] != null)) {
-          $("#loading").addClass("ninja");
-          return bypassFirstRunPage(cfg);
-        }
-      } else {
-        return firstRunPage();
-      }
-    });
+    if ((localStorage["twitch_key"] != null) && (localStorage["input_res"] != null)) {
+      $("#loading").addClass("ninja");
+      bypassFirstRunPage(localStorage);
+      return print("bypassing first run page\n");
+    } else {
+      firstRunPage();
+      return print("going to first run page\n");
+    }
   };
 
   errorPage = function(section, text) {
@@ -130,14 +122,14 @@
 
   firstRunFormHandler = function(fn) {
     if (fn != null) {
-      return formDataToJson("#first_run_form", writeConfigFile, $CONFIG_FILE, fn);
+      return formDataToJson("#first_run_form", writeJsonToLocalStorage, $CONFIG_FILE, fn);
     } else {
-      return formDataToJson("#first_run_form", writeConfigFile, $CONFIG_FILE);
+      return formDataToJson("#first_run_form", writeJsonToLocalStorage, $CONFIG_FILE);
     }
   };
 
   settingsFormHandler = function(cfg) {
-    formDataToJson("#settings_form", writeConfigFile, cfg);
+    formDataToJson("#settings_form", writeJsonToLocalStorage, cfg);
     return $("#settings_form").on("submit", function(evt) {
       return switchSections("#settings", "#streamer");
     });
@@ -196,7 +188,7 @@
           args = stream_command_args[_i];
           text += args + " ";
         }
-        return print(text);
+        return print(text + "\n");
       }
     });
   };

@@ -1,6 +1,6 @@
 {
   "name": "twitch-streamer",
-  "version": "0.1",
+  "version": "0.0.1-ls",
   "description": "gui app for streaming to twitch on linux",
   "main": "./html/index.html",
   "dependencies": {
