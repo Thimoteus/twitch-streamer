@@ -1,5 +1,5 @@
 (function() {
-  var $APP_NAME, $CONFIG_DIR, $CONFIG_FILE, $CONFIG_FILE_NAME, $CONFIG_PATH, $HOME, $STREAM_CMD, bypassFirstRunPage, cmd, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, openLinkInDefaultBrowser, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, sys, writeJsonToLocalStorage;
+  var $CONFIG_FILE, $MAXIMIZED, $PID, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
 
   gui = require('nw.gui');
 
@@ -13,15 +13,9 @@
 
   sh = require('shelljs');
 
-  $HOME = process.env["HOME"];
+  $STREAMING = $MAXIMIZED = false;
 
-  $APP_NAME = "twitch-streamer";
-
-  $CONFIG_DIR = "" + $HOME + "/.config/" + $APP_NAME;
-
-  $CONFIG_FILE_NAME = "" + $APP_NAME + ".json";
-
-  $CONFIG_PATH = "" + $CONFIG_DIR + "/" + $CONFIG_FILE_NAME;
+  $PID = $STREAM_CMD_ARGS = empty = "";
 
   $CONFIG_FILE = {
     "output_res": "640x360",
@@ -88,6 +82,64 @@
       _results.push(localStorage[key] = json[key]);
     }
     return _results;
+  };
+
+  switchStream = function(bool, args) {
+    var stream;
+    if (args == null) {
+      args = "";
+    }
+    if (bool) {
+      if (args === empty) {
+        print("Error, will not be able to start streaming. " + "No arguments were given to the stream command.\n");
+        return;
+      }
+      stream = spawn("avconv", args);
+      $PID = stream.pid;
+      print("avconv started with process id " + $PID + "\n");
+      stream.stdin.end();
+      $("button.stream").text("Stop streaming!");
+      return true;
+    } else if ($PID !== empty) {
+      cmd("kill " + $PID);
+      print("avconv process " + $PID + " killed\n");
+      $PID = empty;
+      $("button.stream").text("Stream!");
+      return false;
+    } else {
+      return console.log("Error: PID is not properly defined.");
+    }
+  };
+
+  initWindowControls = function() {
+    var closeWindow, maximizeWindow, win;
+    win = gui.Window.get();
+    closeWindow = function() {
+      win.on("close", function() {
+        this.hide();
+        print("closing ... \n");
+        this.close(true);
+        if ($PID !== empty) {
+          return switchStream(false);
+        }
+      });
+      return win.close();
+    };
+    maximizeWindow = function() {
+      if ($MAXIMIZED) {
+        win.unmaximize();
+        return $MAXIMIZED = false;
+      } else {
+        win.maximize();
+        return $MAXIMIZED = true;
+      }
+    };
+    $("#close").on("click", function() {
+      return closeWindow();
+    });
+    return $("#maximize").on("click", function() {
+      return maximizeWindow();
+    });
   };
 
   init = function() {
@@ -163,37 +215,19 @@
   };
 
   streamerPage = function(cfg) {
-    var $PID, stream_command_args;
     $(".settings_link").click(function(evt) {
       evt.preventDefault();
       switchSections("#streamer", "#settings");
       return settingsPage(cfg);
     });
-    stream_command_args = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
-    $PID = "";
-    return $("#stream").on("click", function(evt) {
-      var args, stream, text, _i, _len;
-      if ($(this).text() === "Stop streaming!") {
-        cmd("kill " + $PID);
-        print("avconv process " + $PID + " killed\n");
-        return $(this).text("Stream!");
-      } else if ($(this).text() === "Stream!") {
-        stream = spawn("avconv", stream_command_args);
-        $PID = stream.pid;
-        print("avconv started with process id " + $PID + "\n");
-        stream.stdin.end();
-        $(this).text("Stop streaming!");
-        text = "avconv ";
-        for (_i = 0, _len = stream_command_args.length; _i < _len; _i++) {
-          args = stream_command_args[_i];
-          text += args + " ";
-        }
-        return print(text + "\n");
-      }
+    $STREAM_CMD_ARGS = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
+    return $(".stream").on("click", function(evt) {
+      return $STREAMING = switchStream(!$STREAMING, $STREAM_CMD_ARGS);
     });
   };
 
   $(function() {
+    initWindowControls();
     return init();
   });
 

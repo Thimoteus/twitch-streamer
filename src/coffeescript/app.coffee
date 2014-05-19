@@ -17,14 +17,11 @@ exec = require('child_process').exec
 spawn = require('child_process').spawn
 sh = require('shelljs')
 
-#######################
-# 2. variables
-#######################
-$HOME = process.env["HOME"]
-$APP_NAME = "twitch-streamer"
-$CONFIG_DIR = "#{$HOME}/.config/#{$APP_NAME}"
-$CONFIG_FILE_NAME = "#{$APP_NAME}.json"
-$CONFIG_PATH = "#{$CONFIG_DIR}/#{$CONFIG_FILE_NAME}"
+######################################
+# 2. variables, important strings, etc
+######################################
+$STREAMING = $MAXIMIZED = no
+$PID = $STREAM_CMD_ARGS = empty = ""
 $CONFIG_FILE = {
    "output_res": "640x360",
    "fps": "24",
@@ -36,48 +33,27 @@ $CONFIG_FILE = {
 }
 $STREAM_CMD = (input_res, output_res, fps, audio_bit_rate, qual, max_rate, buf_size, url) ->
    [
-      "-v",
-      "verbose",
-      "-f",
-      "x11grab",
-      "-show_region",
-      "1",
-      "-s",
-      input_res,
-      "-r",
-      fps,
-      "-i",
-      ":0.0",
-      "-f",
-      "alsa",
-      "-ac",
-      "2",
-      "-b:a",
-      audio_bit_rate,
-      "-i",
-      "pulse",
-      "-c:v",
-      "libx264",
-      "-crf",
-      "30",
-      "-preset",
-      qual,
-      "-s",
-      output_res,
-      "-vol",
-      "11200",
-      "-c:a",
-      "libmp3lame",
-      "-ar",
-      "44100",
-      "-pix_fmt",
-      "yuv420p",
-      "-maxrate",
-      max_rate,
-      "-bufsize",
-      buf_size,
-      "-f",
-      "flv",
+      "-v", "verbose",
+      "-f", "x11grab",
+      "-show_region", "1",
+      "-s", input_res,
+      "-r", fps,
+      "-i", ":0.0",
+      "-f", "alsa",
+      "-ac", "2",
+      "-b:a", audio_bit_rate,
+      "-i", "pulse",
+      "-c:v", "libx264",
+      "-crf", "30",
+      "-preset", qual,
+      "-s", output_res,
+      "-vol", "11200",
+      "-c:a", "libmp3lame",
+      "-ar", "44100",
+      "-pix_fmt", "yuv420p",
+      "-maxrate", max_rate,
+      "-bufsize", buf_size,
+      "-f", "flv",
       url
    ]
 
@@ -120,9 +96,63 @@ writeJsonToLocalStorage = (json) ->
    for key of json
       localStorage[key] = json[key]
 
+switchStream = (bool, args = "") ->
+   if bool
+      if args is empty
+         print "Error, will not be able to start streaming. " +
+            "No arguments were given to the stream command.\n"
+         return
+      stream = spawn("avconv", args)
+      $PID = stream.pid
+      print "avconv started with process id #{$PID}\n"
+      stream.stdin.end()
+      # change button text
+      $("button.stream").text("Stop streaming!")
+      # # shows exactly what command was run
+      # text = "avconv "
+      # for args in args
+      #    text += args + " "
+      # print text+"\n"
+      return true
+   else if $PID isnt empty
+      cmd("kill #{$PID}")
+      print "avconv process #{$PID} killed\n"
+      $PID = empty
+      # change button text
+      $("button.stream").text("Stream!")
+      return false
+   else
+      console.log "Error: PID is not properly defined."
+
 #######################
 # 4. MEAT AND POTATOES!
 #######################
+initWindowControls = ->
+   # handles maximizing and closing the window
+   win = gui.Window.get()
+
+   # closes the window
+   closeWindow = ->
+      win.on("close", ->
+            this.hide()
+            print "closing ... \n"
+            this.close(true)
+            if $PID isnt empty
+               switchStream(off)
+         )
+      win.close()
+   maximizeWindow = ->
+      if $MAXIMIZED
+         win.unmaximize()
+         $MAXIMIZED = false
+      else
+         win.maximize()
+         $MAXIMIZED = true
+   $("#close").on( "click", ->
+         closeWindow()
+      )
+   $("#maximize").on( "click", -> maximizeWindow() )
+
 init = ->
    # checks to see if avconv is installed
    if not sh.which "avconv"
@@ -199,7 +229,7 @@ streamerPage = (cfg) ->
          settingsPage(cfg)
       )
    # input_res, output_res, fps, audio_bit_rate, quality, max_rate, buf_size, stream_url
-   stream_command_args = $STREAM_CMD(
+   $STREAM_CMD_ARGS = $STREAM_CMD(
       cfg["input_res"],
       cfg["output_res"],
       cfg["fps"],
@@ -209,28 +239,13 @@ streamerPage = (cfg) ->
       cfg["buf_size"],
       cfg["stream_url"]+cfg["twitch_key"]
       )
-   $PID = ""
-   $("#stream").on("click", (evt) ->
-         if $(this).text() is "Stop streaming!"
-            cmd("kill #{$PID}")
-            print "avconv process #{$PID} killed\n"
-            # change button text
-            $(this).text("Stream!")
-         else if $(this).text() is "Stream!"
-            stream = spawn("avconv", stream_command_args)
-            $PID = stream.pid
-            print "avconv started with process id #{$PID}\n"
-            stream.stdin.end()
-            # change button text
-            $(this).text("Stop streaming!")
-            # shows exactly what command was run
-            text = "avconv "
-            for args in stream_command_args
-               text += args + " "
-            print text+"\n"
+   $(".stream").on( "click", (evt) ->
+         $STREAMING = switchStream(not $STREAMING, $STREAM_CMD_ARGS)
       )
 
 #######################
 # 5. init
 #######################
-$ -> init()
+$ ->
+   initWindowControls()
+   init()
