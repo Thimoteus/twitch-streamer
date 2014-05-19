@@ -187,16 +187,16 @@
         return $(this).text("Stream!");
       } else if ($(this).text() === "Stream!") {
         stream = spawn("avconv", stream_command_args);
+        $PID = stream.pid;
+        print("avconv started with process id " + $PID + "\n");
+        stream.stdin.end();
+        $(this).text("Stop streaming!");
         text = "avconv ";
         for (_i = 0, _len = stream_command_args.length; _i < _len; _i++) {
           args = stream_command_args[_i];
           text += args + " ";
         }
-        print(text);
-        $PID = stream.pid;
-        print("avconv started with process id " + $PID + "\n");
-        stream.stdin.end();
-        return $(this).text("Stop streaming!");
+        return print(text);
       }
     });
   };
