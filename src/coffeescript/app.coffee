@@ -228,6 +228,10 @@ streamerPage = (cfg) ->
             $(this).text("Stream!")
          else if $(this).text() is "Stream!"
             stream = spawn("avconv", stream_command_args)
+            text = "avconv "
+            for args in stream_command_args
+               text += args + " "
+            print text
             $PID = stream.pid
             print "avconv started with process id #{$PID}\n"
             stream.stdin.end()

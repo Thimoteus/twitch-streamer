@@ -9,4 +9,4 @@ GUI frontend for streaming to [twitch.tv](http://www.twitch.tv) on Linux.
 Run `npm install` inside the main directory to install all the node dependencies.
 
 ## Running
-`./nw app.nw`
+`npm start`

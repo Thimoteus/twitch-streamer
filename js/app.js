@@ -180,13 +180,19 @@
     stream_command_args = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
     $PID = "";
     return $("#stream").on("click", function(evt) {
-      var stream;
+      var args, stream, text, _i, _len;
       if ($(this).text() === "Stop streaming!") {
         cmd("kill " + $PID);
         print("avconv process " + $PID + " killed\n");
         return $(this).text("Stream!");
       } else if ($(this).text() === "Stream!") {
         stream = spawn("avconv", stream_command_args);
+        text = "avconv ";
+        for (_i = 0, _len = stream_command_args.length; _i < _len; _i++) {
+          args = stream_command_args[_i];
+          text += args + " ";
+        }
+        print(text);
         $PID = stream.pid;
         print("avconv started with process id " + $PID + "\n");
         stream.stdin.end();
