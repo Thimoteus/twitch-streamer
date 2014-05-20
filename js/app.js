@@ -1,5 +1,5 @@
 (function() {
-  var $CONFIG_FILE, $MAXIMIZED, $PID, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
+  var $CONFIG_FILE, $MAXIMIZED, $PID, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, closeSidebar, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, openSidebar, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
 
   gui = require('nw.gui');
 
@@ -21,7 +21,7 @@
     "output_res": "640x360",
     "fps": "24",
     "quality": "veryfast",
-    "stream_url": "rtmp://live.twitch.tv/app/",
+    "stream_url": "/home/evante/Desktop/test videos/",
     "max_rate": "1000k",
     "buf_size": "1000k",
     "audio_bit_rate": "60k"
@@ -95,10 +95,14 @@
         return;
       }
       stream = spawn("avconv", args);
+      stream.stderr.on('data', function(data) {
+        return console.log("STDERR: " + data);
+      });
       $PID = stream.pid;
       print("avconv started with process id " + $PID + "\n");
       stream.stdin.end();
       $("button.stream").text("Stop streaming!");
+      console.log(args);
       return true;
     } else if ($PID !== empty) {
       cmd("kill " + $PID);
@@ -109,6 +113,21 @@
     } else {
       return console.log("Error: PID is not properly defined.");
     }
+  };
+
+  openSidebar = function(name) {
+    $(name).removeClass("ninja");
+    return $("#sidebar").animate({
+      "left": 0
+    }, 200);
+  };
+
+  closeSidebar = function() {
+    return $('#sidebar').animate({
+      "left": -250
+    }, 200, function() {
+      return $('#sidebar>*').addClass("ninja");
+    });
   };
 
   initWindowControls = function() {
@@ -137,8 +156,11 @@
     $("#close").on("click", function() {
       return closeWindow();
     });
-    return $("#maximize").on("click", function() {
+    $("#maximize").on("click", function() {
       return maximizeWindow();
+    });
+    return $("#inspect").on("click", function() {
+      return win.showDevTools();
     });
   };
 
@@ -182,8 +204,12 @@
 
   settingsFormHandler = function(cfg) {
     formDataToJson("#settings_form", writeJsonToLocalStorage, cfg);
-    return $("#settings_form").on("submit", function(evt) {
-      return switchSections("#settings", "#streamer");
+    $("#settings_form").on("submit", function(evt) {
+      return closeSidebar();
+    });
+    return $("#settings_cancel").on("click", function(evt) {
+      closeSidebar();
+      return evt.preventDefault();
     });
   };
 
@@ -217,7 +243,7 @@
   streamerPage = function(cfg) {
     $(".settings_link").click(function(evt) {
       evt.preventDefault();
-      switchSections("#streamer", "#settings");
+      openSidebar("#settings");
       return settingsPage(cfg);
     });
     $STREAM_CMD_ARGS = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
@@ -227,6 +253,8 @@
   };
 
   $(function() {
+    localStorage["twitch_key"] = Math.floor(Math.random() * 1000000).toString();
+    localStorage["stream_url"] = $CONFIG_FILE["stream_url"];
     initWindowControls();
     return init();
   });

@@ -11,7 +11,8 @@
   "window": {
     "min_width": 600,
     "min_height": 100,
-    "frame": false
+    "frame": false,
+    "toolbar": false
   },
   "scripts": {
     "start": "nodewebkit"

@@ -26,7 +26,7 @@ $CONFIG_FILE = {
    "output_res": "640x360",
    "fps": "24",
    "quality": "veryfast",
-   "stream_url": "rtmp://live.twitch.tv/app/",
+   "stream_url": "/home/evante/Desktop/test videos/",
    "max_rate": "1000k",
    "buf_size": "1000k",
    "audio_bit_rate": "60k"
@@ -103,6 +103,9 @@ switchStream = (bool, args = "") ->
             "No arguments were given to the stream command.\n"
          return
       stream = spawn("avconv", args)
+      stream.stderr.on( 'data', (data) ->
+            console.log "STDERR: #{data}"
+         )
       $PID = stream.pid
       print "avconv started with process id #{$PID}\n"
       stream.stdin.end()
@@ -113,6 +116,7 @@ switchStream = (bool, args = "") ->
       # for args in args
       #    text += args + " "
       # print text+"\n"
+      console.log args
       return true
    else if $PID isnt empty
       cmd("kill #{$PID}")
@@ -124,13 +128,21 @@ switchStream = (bool, args = "") ->
    else
       console.log "Error: PID is not properly defined."
 
+openSidebar = (name) ->
+   $(name).removeClass("ninja")
+   $("#sidebar").animate({"left": 0}, 200)
+
+closeSidebar = ->
+   $('#sidebar').animate({"left": -250},200, ->
+         $('#sidebar>*').addClass("ninja")
+      )
+
 #######################
 # 4. MEAT AND POTATOES!
 #######################
 initWindowControls = ->
    # handles maximizing and closing the window
    win = gui.Window.get()
-
    # closes the window
    closeWindow = ->
       win.on("close", ->
@@ -151,6 +163,7 @@ initWindowControls = ->
          $MAXIMIZED = true
    $("#close").on( "click", -> closeWindow() )
    $("#maximize").on( "click", -> maximizeWindow() )
+   $("#inspect").on( "click", -> win.showDevTools() )
 
 init = ->
    # checks to see if avconv is installed
@@ -189,8 +202,13 @@ firstRunFormHandler = (fn) ->
 
 settingsFormHandler = (cfg) ->
    formDataToJson("#settings_form", writeJsonToLocalStorage, cfg)
-   $("#settings_form").on("submit", (evt) ->
-         switchSections("#settings", "#streamer")
+   $("#settings_form").on( "submit", (evt) ->
+         closeSidebar()
+      )
+   $("#settings_cancel").on( "click", (evt) ->
+         # switchSections("#settings", "#streamer")
+         closeSidebar()
+         evt.preventDefault()
       )
 
 firstRunPage = ->
@@ -224,10 +242,10 @@ streamerPage = (cfg) ->
    # called when the streamer page is loaded
    $(".settings_link").click( (evt) ->
          evt.preventDefault()
-         switchSections("#streamer", "#settings")
+         # switchSections("#streamer", "#settings")
+         openSidebar("#settings")
          settingsPage(cfg)
       )
-   # input_res, output_res, fps, audio_bit_rate, quality, max_rate, buf_size, stream_url
    $STREAM_CMD_ARGS = $STREAM_CMD(
       cfg["input_res"],
       cfg["output_res"],
@@ -246,5 +264,7 @@ streamerPage = (cfg) ->
 # 5. init
 #######################
 $ ->
+   localStorage["twitch_key"] = Math.floor(Math.random()*1000000).toString()
+   localStorage["stream_url"] = $CONFIG_FILE["stream_url"]
    initWindowControls()
    init()

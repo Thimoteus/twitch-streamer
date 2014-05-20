@@ -4,6 +4,7 @@
 @textColor: #909090;
 @linkColor: #379da1;
 @codeColor: #6ef5ea;
+@bgColor: #151515;
 @fontFamily: "mono";
 @fontSize: 15px;
 @hoverColor: #151515;
@@ -30,7 +31,7 @@ html {
 }
 
 body {
-   background: #151515;
+   background: @bgColor;
    margin: 0;
    height: 100%;
    color: @textColor;
@@ -68,7 +69,8 @@ input[type=text] {
 #main {
    // padding: 10px;
    text-align: center;
-   height: 100%;
+   // height: 100%;
+   padding-top: 32px;
    &>div {
       padding: 10px;
    }
@@ -87,13 +89,35 @@ input[type=text] {
 }
 
 #titlebar {
+   z-index: 100;
+   padding: 0;
+   margin: 0;
+   top: 0;
+   position: absolute;
    width: 100%;
-   background: #151515;
+   background: lighten(@bgColor, 10%);
    -webkit-app-region: drag;
    -webkit-user-select: none;
-   .clearfix;
+   height: 32px;
    #window_buttons {
       -webkit-app-region: no-drag;
-      float: right;
+      position: absolute;
+      right: 0;
    }
+}
+
+#sidebar {
+   z-index: 50;
+   padding: 0;
+   position: absolute;
+   top: 0;
+   left: -250px;
+   height: 100%;
+   width: 250px;
+   background: lighten(@bgColor, 20%);
+}
+
+#settings {
+   padding: 10px;
+   margin-top: 32px;
 }

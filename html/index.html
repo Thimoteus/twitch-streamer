@@ -4,14 +4,21 @@
   <meta charset="UTF-8">
   <title>twitch streamer</title>
 </head>
+<link rel="stylesheet" href="../css/font-awesome-4.1.0/css/font-awesome.min.css" type="text/css" media="screen" title="font awesome" charset="utf-8">
 <link rel="stylesheet" href="../css/app.css" type="text/css" media="screen" title="stylesheet" charset="utf-8">
 <body>
+
    <div id="titlebar">
+      <!-- <div id="title">
+         twitch streamer
+      </div> -->
       <div id="window_buttons">
          <button name="close" id="close">close this</button>
          <button name="maximize" id="maximize">maximize me</button>
-      </div>
-   </div>
+         <button name="inspect" id="inspect">dev tools</button>
+      </div> <!-- #window_buttons -->
+   </div> <!-- #titlebar -->
+
    <div id="main">
 
       <div id="error" class="ninja">
@@ -51,7 +58,11 @@
 
       </div> <!-- #streamer -->
 
-      <div id="settings" class="ninja">
+   </div> <!-- #main -->
+
+   <div id="sidebar">
+
+      <div id="settings" class="sidebar">
          <form id="settings_form">
 
             <div class="key">
@@ -92,11 +103,13 @@
             </div> <!-- .quality -->
 
             <input type="submit" name="submit" id="settings_submit" value="Save">
+            <button name="cancel" id="settings_cancel">Cancel</button>
 
          </form>
       </div> <!-- #settings -->
 
-   </div> <!-- #main -->
+   </div> <!-- #sidebar -->
+
    <script type="text/javascript" charset="utf-8" src="../js/jquery.min.js"></script>
    <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
 </body>
