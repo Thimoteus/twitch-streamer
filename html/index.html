@@ -4,19 +4,26 @@
   <meta charset="UTF-8">
   <title>twitch streamer</title>
 </head>
-<link rel="stylesheet" href="../css/font-awesome-4.1.0/css/font-awesome.min.css" type="text/css" media="screen" title="font awesome" charset="utf-8">
 <link rel="stylesheet" href="../css/app.css" type="text/css" media="screen" title="stylesheet" charset="utf-8">
+<link rel="stylesheet" href="../css/font-awesome-4.1.0/css/font-awesome.min.css">
 <body>
 
    <div id="titlebar">
-      <!-- <div id="title">
+
+      <div id="settings_button" class="ninja">
+         <i class="fa fa-list settings_link"></i>
+      </div>
+
+      <div id="title">
          twitch streamer
-      </div> -->
+      </div> <!-- #titlebar -->
+
       <div id="window_buttons">
-         <button name="close" id="close">close this</button>
-         <button name="maximize" id="maximize">maximize me</button>
-         <button name="inspect" id="inspect">dev tools</button>
+         <i class="fa fa-search" id="inspect"></i>
+         <i class="fa fa-plus-circle" id="maximize"></i>
+         <i class="fa fa-times-circle" id="close"></i>
       </div> <!-- #window_buttons -->
+
    </div> <!-- #titlebar -->
 
    <div id="main">
@@ -52,9 +59,7 @@
 
       <div id="streamer" class="ninja">
 
-         <button name="stream" class="stream">Stream!</button>
-         <br>
-         go to the <a href="#settings" class="settings_link">settings</a>
+         <i class="fa fa-play fa-5x stream"></i>
 
       </div> <!-- #streamer -->
 

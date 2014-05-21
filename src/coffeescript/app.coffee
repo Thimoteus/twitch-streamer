@@ -20,7 +20,7 @@ sh = require('shelljs')
 ######################################
 # 2. variables, important strings, etc
 ######################################
-$STREAMING = $MAXIMIZED = no
+$STREAMING = $MAXIMIZED = $SIDEBAR_OPEN = no
 $PID = $STREAM_CMD_ARGS = empty = ""
 $CONFIG_FILE = {
    "output_res": "640x360",
@@ -109,21 +109,15 @@ switchStream = (bool, args = "") ->
       $PID = stream.pid
       print "avconv started with process id #{$PID}\n"
       stream.stdin.end()
-      # change button text
-      $("button.stream").text("Stop streaming!")
-      # # shows exactly what command was run
-      # text = "avconv "
-      # for args in args
-      #    text += args + " "
-      # print text+"\n"
-      console.log args
+      # change icon
+      $(".stream").removeClass("fa-play").addClass("fa-stop")
       return true
    else if $PID isnt empty
       cmd("kill #{$PID}")
       print "avconv process #{$PID} killed\n"
       $PID = empty
-      # change button text
-      $("button.stream").text("Stream!")
+      # change icon
+      $(".stream").removeClass("fa-stop").addClass("fa-play")
       return false
    else
       console.log "Error: PID is not properly defined."
@@ -190,6 +184,7 @@ errorPage = (section, text) ->
 bypassFirstRunPage = (cfg = $CONFIG_FILE) ->
    # call this when you don't need the user's screen resolution
    # or twitch key
+   $("#settings_button").removeClass("ninja")
    switchSections("#first_run", "#streamer")
    streamerPage(cfg)
 
@@ -240,10 +235,20 @@ settingsPage = (cfg) ->
 
 streamerPage = (cfg) ->
    # called when the streamer page is loaded
-   $(".settings_link").click( (evt) ->
+
+   # only allow settings to be opened if
+   # we can already stream
+   $("#settings_button").click( (evt) ->
          evt.preventDefault()
-         # switchSections("#streamer", "#settings")
-         openSidebar("#settings")
+         if $SIDEBAR_OPEN
+            closeSidebar()
+            $SIDEBAR_OPEN = false
+            # for smoother, fake animation
+            setTimeout( (-> $("#settings_button").removeClass("lightbg")), 140)
+         else
+            openSidebar("#settings")
+            $SIDEBAR_OPEN = true
+            $("#settings_button").addClass("lightbg")
          settingsPage(cfg)
       )
    $STREAM_CMD_ARGS = $STREAM_CMD(

@@ -1,5 +1,5 @@
 (function() {
-  var $CONFIG_FILE, $MAXIMIZED, $PID, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, closeSidebar, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, openSidebar, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
+  var $CONFIG_FILE, $MAXIMIZED, $PID, $SIDEBAR_OPEN, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, closeSidebar, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, openSidebar, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
 
   gui = require('nw.gui');
 
@@ -13,7 +13,7 @@
 
   sh = require('shelljs');
 
-  $STREAMING = $MAXIMIZED = false;
+  $STREAMING = $MAXIMIZED = $SIDEBAR_OPEN = false;
 
   $PID = $STREAM_CMD_ARGS = empty = "";
 
@@ -101,14 +101,13 @@
       $PID = stream.pid;
       print("avconv started with process id " + $PID + "\n");
       stream.stdin.end();
-      $("button.stream").text("Stop streaming!");
-      console.log(args);
+      $(".stream").removeClass("fa-play").addClass("fa-stop");
       return true;
     } else if ($PID !== empty) {
       cmd("kill " + $PID);
       print("avconv process " + $PID + " killed\n");
       $PID = empty;
-      $("button.stream").text("Stream!");
+      $(".stream").removeClass("fa-stop").addClass("fa-play");
       return false;
     } else {
       return console.log("Error: PID is not properly defined.");
@@ -190,6 +189,7 @@
     if (cfg == null) {
       cfg = $CONFIG_FILE;
     }
+    $("#settings_button").removeClass("ninja");
     switchSections("#first_run", "#streamer");
     return streamerPage(cfg);
   };
@@ -241,9 +241,19 @@
   };
 
   streamerPage = function(cfg) {
-    $(".settings_link").click(function(evt) {
+    $("#settings_button").click(function(evt) {
       evt.preventDefault();
-      openSidebar("#settings");
+      if ($SIDEBAR_OPEN) {
+        closeSidebar();
+        $SIDEBAR_OPEN = false;
+        setTimeout((function() {
+          return $("#settings_button").removeClass("lightbg");
+        }), 140);
+      } else {
+        openSidebar("#settings");
+        $SIDEBAR_OPEN = true;
+        $("#settings_button").addClass("lightbg");
+      }
       return settingsPage(cfg);
     });
     $STREAM_CMD_ARGS = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
