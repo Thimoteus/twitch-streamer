@@ -1,6 +1,6 @@
 {
   "name": "twitch-streamer",
-  "version": "0.0.1-ls",
+  "version": "0.2.0",
   "description": "gui app for streaming to twitch on linux",
   "main": "./html/index.html",
   "dependencies": {
@@ -10,9 +10,10 @@
   },
   "window": {
     "min_width": 600,
-    "min_height": 100,
+    "min_height": 335,
     "frame": false,
-    "toolbar": false
+    "toolbar": false,
+    "show": false
   },
   "scripts": {
     "start": "nodewebkit"

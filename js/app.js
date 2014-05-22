@@ -1,5 +1,5 @@
 (function() {
-  var $CONFIG_FILE, $MAXIMIZED, $PID, $SIDEBAR_OPEN, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, closeSidebar, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, openSidebar, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, writeJsonToLocalStorage;
+  var $CONFIG_FILE, $MAXIMIZED, $PID, $SIDEBAR_OPEN, $STREAMING, $STREAM_CMD, $STREAM_CMD_ARGS, bypassFirstRunPage, closeSidebar, cmd, empty, errorPage, exec, firstRunFormHandler, firstRunPage, formDataToJson, fse, gui, init, initWindowControls, openLinkInDefaultBrowser, openSidebar, print, puts, settingsFormHandler, settingsPage, sh, spawn, streamerPage, switchSections, switchStream, sys, toggleSidebar, win, writeJsonToLocalStorage;
 
   gui = require('nw.gui');
 
@@ -13,6 +13,8 @@
 
   sh = require('shelljs');
 
+  win = gui.Window.get();
+
   $STREAMING = $MAXIMIZED = $SIDEBAR_OPEN = false;
 
   $PID = $STREAM_CMD_ARGS = empty = "";
@@ -21,7 +23,7 @@
     "output_res": "640x360",
     "fps": "24",
     "quality": "veryfast",
-    "stream_url": "/home/evante/Desktop/test videos/",
+    "stream_url": "rtmp://live.twitch.tv/app",
     "max_rate": "1000k",
     "buf_size": "1000k",
     "audio_bit_rate": "60k"
@@ -116,21 +118,35 @@
 
   openSidebar = function(name) {
     $(name).removeClass("ninja");
-    return $("#sidebar").animate({
+    $("#sidebar").stop().animate({
       "left": 0
     }, 200);
+    return $SIDEBAR_OPEN = true;
   };
 
   closeSidebar = function() {
-    return $('#sidebar').animate({
+    $('#sidebar').stop().animate({
       "left": -250
     }, 200, function() {
       return $('#sidebar>*').addClass("ninja");
     });
+    return $SIDEBAR_OPEN = false;
+  };
+
+  toggleSidebar = function() {
+    if ($SIDEBAR_OPEN) {
+      closeSidebar();
+      return setTimeout((function() {
+        return $("#settings_button").removeClass("lightbg");
+      }), 140);
+    } else {
+      openSidebar("#settings");
+      return $("#settings_button").addClass("lightbg");
+    }
   };
 
   initWindowControls = function() {
-    var closeWindow, maximizeWindow, win;
+    var closeWindow, maximizeWindow;
     win = gui.Window.get();
     closeWindow = function() {
       win.on("close", function() {
@@ -204,12 +220,12 @@
 
   settingsFormHandler = function(cfg) {
     formDataToJson("#settings_form", writeJsonToLocalStorage, cfg);
-    $("#settings_form").on("submit", function(evt) {
-      return closeSidebar();
-    });
-    return $("#settings_cancel").on("click", function(evt) {
-      closeSidebar();
-      return evt.preventDefault();
+    return $("#settings_form").on("submit", function(evt) {
+      return $(".settings_saved").css({
+        "opacity": 1
+      }).removeClass("ninja").stop().animate({
+        "opacity": 0
+      }, 1000);
     });
   };
 
@@ -243,17 +259,7 @@
   streamerPage = function(cfg) {
     $("#settings_button").click(function(evt) {
       evt.preventDefault();
-      if ($SIDEBAR_OPEN) {
-        closeSidebar();
-        $SIDEBAR_OPEN = false;
-        setTimeout((function() {
-          return $("#settings_button").removeClass("lightbg");
-        }), 140);
-      } else {
-        openSidebar("#settings");
-        $SIDEBAR_OPEN = true;
-        $("#settings_button").addClass("lightbg");
-      }
+      toggleSidebar();
       return settingsPage(cfg);
     });
     $STREAM_CMD_ARGS = $STREAM_CMD(cfg["input_res"], cfg["output_res"], cfg["fps"], cfg["audio_bit_rate"], cfg["quality"], cfg["max_rate"], cfg["buf_size"], cfg["stream_url"] + cfg["twitch_key"]);
@@ -263,8 +269,6 @@
   };
 
   $(function() {
-    localStorage["twitch_key"] = Math.floor(Math.random() * 1000000).toString();
-    localStorage["stream_url"] = $CONFIG_FILE["stream_url"];
     initWindowControls();
     return init();
   });

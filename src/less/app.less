@@ -1,7 +1,7 @@
 // variables
 @sidebarMinWidth: 200px;
 @sidebarWidth: 33%;
-@textColor: #909090;
+@textColor: lighten(#909090,10%);
 @linkColor: #379da1;
 @codeColor: #6ef5ea;
 @bgColor: #151515;
@@ -54,12 +54,20 @@ a {
    color: @linkColor;
 }
 
-input[type=text] {
-   background: white;
-   border: none;
-   border-radius: 4px;
+input[type=text], select { // from http://css-tricks.com/snippets/css/glowing-blue-input-highlights/
    min-width: 200px;
-   text-indent: 3px;
+   text-indent: 2px;
+   transition: all 0.30s ease-in-out;
+   outline: none;
+   padding: 3px 0px 3px 3px;
+   margin: 5px 1px 3px 0px;
+   border: 1px solid #DDDDDD;
+   &:focus {
+      box-shadow: 0 0 5px rgba(81, 203, 238, 1);
+      padding: 3px 0px 3px 3px;
+      margin: 5px 1px 3px 0px;
+      border: 1px solid rgba(81, 203, 238, 1);
+   }
 }
 
 .ninja {.ninja();}
@@ -90,6 +98,9 @@ input[type=text] {
 #error {
    background: #d32f2f;
    color: lighten(@textColor, 40%);
+   p::selection, code::selection {
+      background: @linkColor;
+   }
 }
 
 #titlebar {
@@ -147,6 +158,30 @@ input[type=text] {
 #settings {
    padding: 10px;
    margin-top: 32px;
+   form>div {
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+   }
+   .quality {
+      border-bottom: 1px solid #ccc;
+   }
+   .submit {
+      min-width: 200px;
+   }
+}
+
+.submit, .cancel {
+   padding: 3px 5px;
+   border: 1px #373737;
+   color: white;
+}
+
+.submit {
+   background: #2469b8;
+}
+.settings_saved {
+   color: @codeColor;
+   padding-top: 15px;
 }
 
 #streamer {

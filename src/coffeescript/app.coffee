@@ -1,7 +1,7 @@
 #/#/#/#/#/#/#/#/#/#/#/#/
 #/#/#/#/#/#/#/#/#/#/#/#/
 # twitch streamer
-# version: 0.1
+# version: 0.2.0
 # maintainer: thimoteus
 # site: github.com/Thimoteus
 #/#/#/#/#/#/#/#/#/#/#/#/
@@ -16,6 +16,7 @@ sys = require('sys')
 exec = require('child_process').exec
 spawn = require('child_process').spawn
 sh = require('shelljs')
+win = gui.Window.get()
 
 ######################################
 # 2. variables, important strings, etc
@@ -26,7 +27,7 @@ $CONFIG_FILE = {
    "output_res": "640x360",
    "fps": "24",
    "quality": "veryfast",
-   "stream_url": "/home/evante/Desktop/test videos/",
+   "stream_url": "rtmp://live.twitch.tv/app",
    "max_rate": "1000k",
    "buf_size": "1000k",
    "audio_bit_rate": "60k"
@@ -64,6 +65,15 @@ print = (x) -> process.stdout.write x # DO NOT USE FOR DEBUGGING
 
 puts = (err, stdout, stderr) -> sys.puts(stdout)
 cmd = (command) -> exec(command, puts)
+
+# Cantor = (x,y) ->
+#    (Math.pow(x+y,2)+x+3*y)/2
+#
+# InverseCantor = (z) ->
+#    w = Math.floor((Math.sqrt(8*z+1)-1)/2)
+#    t = (Math.pow(w,2)+w)/2
+#    y = z - t
+#    [w - y, y]
 
 formDataToJson = (form, fn, json={}, callback) ->
    # function that turns a form's input into a json object
@@ -124,13 +134,21 @@ switchStream = (bool, args = "") ->
 
 openSidebar = (name) ->
    $(name).removeClass("ninja")
-   $("#sidebar").animate({"left": 0}, 200)
-
+   $("#sidebar").stop().animate({"left": 0}, 200)
+   $SIDEBAR_OPEN = true
 closeSidebar = ->
-   $('#sidebar').animate({"left": -250},200, ->
+   $('#sidebar').stop().animate({"left": -250},200, ->
          $('#sidebar>*').addClass("ninja")
       )
-
+   $SIDEBAR_OPEN = false
+toggleSidebar = ->
+   if $SIDEBAR_OPEN
+      closeSidebar()
+      # for smoother, fake animation
+      setTimeout( (-> $("#settings_button").removeClass("lightbg")), 140)
+   else
+      openSidebar("#settings")
+      $("#settings_button").addClass("lightbg")
 #######################
 # 4. MEAT AND POTATOES!
 #######################
@@ -198,12 +216,11 @@ firstRunFormHandler = (fn) ->
 settingsFormHandler = (cfg) ->
    formDataToJson("#settings_form", writeJsonToLocalStorage, cfg)
    $("#settings_form").on( "submit", (evt) ->
-         closeSidebar()
-      )
-   $("#settings_cancel").on( "click", (evt) ->
-         # switchSections("#settings", "#streamer")
-         closeSidebar()
-         evt.preventDefault()
+         $(".settings_saved")
+            .css({"opacity": 1})
+            .removeClass("ninja")
+            .stop()
+            .animate({"opacity": 0}, 1000)
       )
 
 firstRunPage = ->
@@ -240,15 +257,7 @@ streamerPage = (cfg) ->
    # we can already stream
    $("#settings_button").click( (evt) ->
          evt.preventDefault()
-         if $SIDEBAR_OPEN
-            closeSidebar()
-            $SIDEBAR_OPEN = false
-            # for smoother, fake animation
-            setTimeout( (-> $("#settings_button").removeClass("lightbg")), 140)
-         else
-            openSidebar("#settings")
-            $SIDEBAR_OPEN = true
-            $("#settings_button").addClass("lightbg")
+         toggleSidebar()
          settingsPage(cfg)
       )
    $STREAM_CMD_ARGS = $STREAM_CMD(
@@ -269,7 +278,5 @@ streamerPage = (cfg) ->
 # 5. init
 #######################
 $ ->
-   localStorage["twitch_key"] = Math.floor(Math.random()*1000000).toString()
-   localStorage["stream_url"] = $CONFIG_FILE["stream_url"]
    initWindowControls()
    init()
